@@ -32,8 +32,23 @@ export function CustomerList({ selectedPNo, onSelect, reloadKey }: CustomerListP
   }, [loadCustomers, reloadKey]);
 
   const handleCreate = async (firstName: string, lastName: string, pNo: string) => {
-    await customersApi.create({ firstName, lastName, pNo });
-    await loadCustomers();
+    // Use the customer data returned from the API to update the list instantly
+    const newCustomer = await customersApi.create({ firstName, lastName, pNo });
+    
+    setCustomers(prev => {
+      const updated = [...prev, { 
+        pNo: newCustomer.pNo, 
+        firstName: newCustomer.firstName, 
+        lastName: newCustomer.lastName 
+      }];
+      // Maintain alphabetical order
+      return updated.sort((a, b) => 
+        a.firstName.localeCompare(b.firstName) || 
+        a.lastName.localeCompare(b.lastName) || 
+        a.pNo.localeCompare(b.pNo)
+      );
+    });
+
     setShowForm(false);
     onSelect(pNo);
   };
@@ -42,13 +57,15 @@ export function CustomerList({ selectedPNo, onSelect, reloadKey }: CustomerListP
     <div className="customer-list">
       <div className="list-header">
         <h2>Customers</h2>
-        <button className="btn btn-primary btn-sm" onClick={() => setShowForm(true)}>
-          + Add
-        </button>
+        {!error && (
+          <button className="btn btn-primary btn-sm" onClick={() => setShowForm(true)}>
+            + Add
+          </button>
+        )}
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}
-
+      
       <div className="list-items">
         {loading && <p className="muted">Loading…</p>}
         {!loading && customers.length === 0 && !error && (

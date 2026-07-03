@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import rateLimit from "express-rate-limit";
 import cors from 'cors';
 import { CustomerController } from './controllers/CustomerController.js';
 import { AccountController } from './controllers/AccountController.js';
@@ -11,9 +12,16 @@ const app = express();
 app.use(cors({
   origin: 'http://localhost:3000',
   methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['*']
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json());
+
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100
+}));
+
+app.use(express.json( {limit: '1mb' }));
+
 
 // Routes
 app.get('/api/customers', CustomerController.getAll);

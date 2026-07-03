@@ -19,7 +19,7 @@ export class AccountRepository {
 
   async findById(accountId: number, client?: PoolClient): Promise<AccountRecord | null> {
     const res = await (client || pool).query(
-      'SELECT * FROM accounts WHERE account_id = $1', 
+      'SELECT account_id, pno, account_type, balance WHERE account_id = $1', 
       [accountId]
     );
     return res.rows[0] || null;
