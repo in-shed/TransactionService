@@ -273,7 +273,7 @@ export class BankService {
 
     await this.executeInTransaction(async (client) => {
       await this.accountRepo.updateBalance(accountId, newBalance.toNumber(), client);
-      // Original Java code used amountBD.negate()
+
       await this.transactionRepo.save(accountId, -amount, TransactionType.WITHDRAWAL, "Withdrawal", client);
     });
 
@@ -299,7 +299,7 @@ export class BankService {
     let balance = new Decimal(acc.balance);
 
     await this.executeInTransaction(async (client) => {
-      // Calculate interest on savings (example: 1.0 %)
+
       if (AccountType.SAVINGS === acc.account_type && balance.greaterThan(0)) {
         const interest = balance.mul('0.01').toDecimalPlaces(2);
         await this.transactionRepo.save(accountId, interest.toNumber(), TransactionType.INTEREST, "Interest on closure", client);

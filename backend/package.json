@@ -1,11 +1,11 @@
 {
-  "name": "bank-backend",
+  "name": "backend",
   "version": "1.0.0",
   "description": "Node.js backend for the bank application",
   "main": "dist/index.js",
   "scripts": {
     "start": "node dist/index.js",
-    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "dev": "tsx watch src/index.ts",
     "build": "tsc"
   },
   "dependencies": {
@@ -21,6 +21,7 @@
     "@types/node": "^22.9.0",
     "@types/pg": "^8.11.10",
     "ts-node-dev": "^2.0.0",
+    "tsx": "^4.22.5",
     "typescript": "^5.6.3"
   }
 }
