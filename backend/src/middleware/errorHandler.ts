@@ -20,6 +20,14 @@ export function errorHandler(err: Error, req: Request, res: Response, next: Next
     });
   }
 
+  if (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === '57P01') {
+    return res.status(503).json({
+      status: 503,
+      message: "Service Unavailable: Database connection lost. Kindly try again later.",
+      timestamp: new Date().toISOString,
+    })
+  }
+
   return res.status(500).json({
     status: 500,
     message: "Internal server error",
