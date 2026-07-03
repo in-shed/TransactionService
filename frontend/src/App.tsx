@@ -8,6 +8,8 @@ export default function App() {
 
   const refreshCustomers = () => setReloadKey(k => k + 1);
 
+
+
   return (
     <div className="app">
       <aside className="sidebar">
@@ -29,6 +31,7 @@ export default function App() {
               refreshCustomers();
             }}
             onChanged={refreshCustomers}
+  
           />
         ) : (
           <div className="empty-state">

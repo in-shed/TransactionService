@@ -13,7 +13,7 @@ export interface TransactionRecord {
 export class TransactionRepository {
   async save(
     accountId: number, 
-    amount: number, 
+    amount: string, 
     transactionType: TransactionType, 
     description: string, 
     client?: PoolClient

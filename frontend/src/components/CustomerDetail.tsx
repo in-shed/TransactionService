@@ -4,6 +4,7 @@ import { accountsApi } from '../api/accounts';
 import type { CustomerResponse } from '../types';
 import { AccountCard } from './AccountCard';
 import { CustomerEditForm } from './CustomerEditForm';
+import { ApiError } from '../api/client';
 
 interface CustomerDetailProps {
   pNo: string;
@@ -24,7 +25,14 @@ export function CustomerDetail({ pNo, onCustomerDeleted, onChanged }: CustomerDe
     try {
       setCustomer(await customersApi.get(pNo));
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load customer');
+      const err = e as ApiError;
+      if (err.status === 503 || err.status === 500) {
+        setError("Database is currently unavailable. Please try again later.");
+      } else if (err.status === 429) {
+        setError("Too many requests. Please slow down.");
+      } else {
+        setError(e instanceof Error ? e.message : 'Failed to load customer');
+      }
     } finally {
       setLoading(false);
     }

@@ -162,7 +162,7 @@ export class BankService {
       throw new ResourceNotFoundError(`Customer not found: ${pNo}`);
     }
     
-    const accountId = await this.accountRepo.save(pNo, AccountType.SAVINGS, 0);
+    const accountId = await this.accountRepo.save(pNo, AccountType.SAVINGS, "0.00");
     const account = await this.accountRepo.findById(accountId);
     
     return {
@@ -185,7 +185,8 @@ export class BankService {
       throw new ResourceNotFoundError(`Customer not found: ${pNo}`);
     }
     
-    const accountId = await this.accountRepo.save(pNo, AccountType.CREDIT, 0);
+
+    const accountId = await this.accountRepo.save(pNo, AccountType.CREDIT, "0.00");
     const account = await this.accountRepo.findById(accountId);
     
     return {
@@ -221,11 +222,16 @@ export class BankService {
    * @param pNo kundens personnummer
    * @param accountId kontots id
    * @param amount belopp att sätta in
+   * @throws BusinessError om beloppet är negativt eller för stort.
    * @return true om insättningen lyckades, annars false.
+   * 
    */
   async deposit(pNo: string, accountId: number, amount: number) {
     if (amount <= 0) {
       throw new BusinessError("Deposit amount must be positive");
+    }
+    if (amount > 1000000000) {
+    throw new BusinessError("Amount is too large (max 1,000,000,000).");
     }
 
     const acc = await this.getOwnedAccount(pNo, accountId);
@@ -235,8 +241,8 @@ export class BankService {
     const newBalance = currentBalance.plus(amount);
 
     await this.executeInTransaction(async (client) => {
-      await this.accountRepo.updateBalance(accountId, newBalance.toNumber(), client);
-      await this.transactionRepo.save(accountId, amount, TransactionType.DEPOSIT, "Deposit", client);
+      await this.accountRepo.updateBalance(accountId, newBalance.toFixed(2), client);
+      await this.transactionRepo.save(accountId, amount.toFixed(2), TransactionType.DEPOSIT, "Deposit", client);
     });
 
     return {
@@ -253,12 +259,17 @@ export class BankService {
    * @param pNo kundens personnummer
    * @param accountId kontots id
    * @param amount belopp att ta ut
+   * @throws BusinessError om uttaget inte är tillåtet (t.ex. för stort belopp eller otillräckligt saldo).
    * @return true om uttaget lyckades, annars false.
+   * 
    */
   async withdraw(pNo: string, accountId: number, amount: number) {
     if (amount <= 0) {
       throw new BusinessError("Withdrawal amount must be positive");
     }
+    if (amount > 1000000000) {
+    throw new BusinessError("Amount is too large (max 1,000,000,000).");
+  }
 
     const acc = await this.getOwnedAccount(pNo, accountId);
     if (!acc) throw new ResourceNotFoundError("Account not found or does not belong to customer");
@@ -272,16 +283,15 @@ export class BankService {
     }
 
     await this.executeInTransaction(async (client) => {
-      await this.accountRepo.updateBalance(accountId, newBalance.toNumber(), client);
-
-      await this.transactionRepo.save(accountId, -amount, TransactionType.WITHDRAWAL, "Withdrawal", client);
+      await this.accountRepo.updateBalance(accountId, newBalance.toFixed(16), client);
+      await this.transactionRepo.save(accountId, amountBD.negated().toFixed(16), TransactionType.WITHDRAWAL, "Withdrawal", client);
     });
 
     return {
       accountId: acc.account_id,
       pNo: acc.pno,
       accountType: acc.account_type,
-      balance: newBalance.toFixed(2)
+      balance: newBalance.toFixed(16)
     };
   }
 
@@ -291,6 +301,7 @@ export class BankService {
    * @param pNo kundens personnummer
    * @param accountId kontots id
    * @return info om kontot vid avslut, null om kunden eller kontot inte finns.
+   * @throws BusinessError om kontot inte kan stängas för att det inte kan hittas.
    */
   async closeAccount(pNo: string, accountId: number) {
     const acc = await this.getOwnedAccount(pNo, accountId);
@@ -301,21 +312,21 @@ export class BankService {
     await this.executeInTransaction(async (client) => {
 
       if (AccountType.SAVINGS === acc.account_type && balance.greaterThan(0)) {
-        const interest = balance.mul('0.01').toDecimalPlaces(2);
-        await this.transactionRepo.save(accountId, interest.toNumber(), TransactionType.INTEREST, "Interest on closure", client);
+        const interest = balance.mul('0.01').toDecimalPlaces(16);
+        await this.transactionRepo.save(accountId, interest.toFixed(16), TransactionType.INTEREST, "Interest on closure", client);
         balance = balance.plus(interest);
       }
 
       const finalBalance = balance;
-      await this.transactionRepo.save(accountId, finalBalance.toNumber(), TransactionType.ACCOUNT_CLOSED, "Account closed", client);
+      await this.transactionRepo.save(accountId, finalBalance.toFixed(16), TransactionType.ACCOUNT_CLOSED, "Account closed", client);
       await this.accountRepo.delete(accountId, client);
     });
 
     return {
       accountId: acc.account_id,
       accountType: acc.account_type,
-      finalBalance: balance.toFixed(2),
-      message: `Account ${accountId} (${acc.account_type}) closed. Final balance: ${balance.toFixed(2)}`
+      finalBalance: balance.toFixed(16),
+      message: `Account ${accountId} (${acc.account_type}) closed. Final balance: ${balance.toFixed(16)}`
     };
   }
 
@@ -358,8 +369,10 @@ export class BankService {
   }
 
   /**
-   * Runs a unit of work inside a database transaction with
-   * commit / rollback semantics.
+   * Kör ett callback i en databas-transaktion. Om callbacken kastar ett undantag rullas transaktionen tillbaka.
+   * @param callback en funktion som tar emot en PoolClient och returnerar ett Promise<T>
+   * @returns resultatet av callbacken
+   * @throws undantag som kastas av callbacken
    */
   private async executeInTransaction<T>(callback: (client: PoolClient) => Promise<T>): Promise<T> {
     const client = await pool.connect();

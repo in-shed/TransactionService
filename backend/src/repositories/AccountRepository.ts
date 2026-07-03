@@ -19,13 +19,13 @@ export class AccountRepository {
 
   async findById(accountId: number, client?: PoolClient): Promise<AccountRecord | null> {
     const res = await (client || pool).query(
-      'SELECT account_id, pno, account_type, balance WHERE account_id = $1', 
+      'SELECT * FROM accounts WHERE account_id = $1', 
       [accountId]
     );
     return res.rows[0] || null;
   }
 
-  async save(pNo: string, accountType: AccountType, balance: number, client?: PoolClient): Promise<number> {
+  async save(pNo: string, accountType: AccountType, balance: string, client?: PoolClient): Promise<number> {
     const res = await (client || pool).query(
       'INSERT INTO accounts(pno, account_type, balance) VALUES ($1, $2::account_type, $3) RETURNING account_id',
       [pNo, accountType, balance]
@@ -33,7 +33,7 @@ export class AccountRepository {
     return res.rows[0].account_id;
   }
 
-  async updateBalance(accountId: number, balance: number, client?: PoolClient): Promise<boolean> {
+  async updateBalance(accountId: number, balance: string, client?: PoolClient): Promise<boolean> {
     const res = await (client || pool).query(
       'UPDATE accounts SET balance = $1 WHERE account_id = $2',
       [balance, accountId]

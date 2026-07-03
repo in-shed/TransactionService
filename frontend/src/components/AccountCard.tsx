@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { accountsApi } from '../api/accounts';
 import { transactionsApi } from '../api/transactions';
 import type { AccountResponse, TransactionResponse } from '../types';
+import { ApiError } from '../api/client';
 
 interface AccountCardProps {
   pNo: string;
@@ -9,7 +10,7 @@ interface AccountCardProps {
   onChanged: () => void;
 }
 
-export function AccountCard({ pNo, account, onChanged }: AccountCardProps) {
+export function AccountCard({ pNo, account, onChanged}: AccountCardProps) {
   const [amount, setAmount] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<TransactionResponse[] | null>(null);
@@ -33,7 +34,14 @@ export function AccountCard({ pNo, account, onChanged }: AccountCardProps) {
       setError(null);
       onChanged();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Deposit failed');
+      const err = e as ApiError;
+      if (err.status === 503 || err.status === 500) {
+        setError("Database error. Please try again later.");
+      } else if (err.status === 429) {
+        setError("Too many requests. Please slow down.");
+      } else {
+        setError(err.message || 'Deposit failed');
+      }
     }
   };
 

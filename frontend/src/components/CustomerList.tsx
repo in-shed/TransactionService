@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { customersApi } from '../api/customers';
+import { ApiError } from '../api/client';
 import type { CustomerSummary } from '../types';
 import { CustomerForm } from './CustomerForm';
 
@@ -21,7 +22,15 @@ export function CustomerList({ selectedPNo, onSelect, reloadKey }: CustomerListP
     try {
       setCustomers(await customersApi.getAll());
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load customers');
+      const err = e as ApiError;
+      if (err.status === 503 || err.status === 500) {
+        setError("Database error. Please try again later.");
+      } else if (err.status === 429) {
+        setError("Too many requests. Please slow down.");
+      } else {
+        setError(e instanceof Error ? e.message : 'Failed to load customers');
+      }
+      setCustomers([]);
     } finally {
       setLoading(false);
     }
