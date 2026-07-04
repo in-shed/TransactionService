@@ -10,7 +10,19 @@ export interface TransactionRecord {
   transaction_time: Date;
 }
 
+/**
+ * Hanterar metoder för att spara och hämta transaktioner från databasen.
+ */
 export class TransactionRepository {
+  /**
+   * Sparar en transaktion i databasen.
+   * @param accountId 
+   * @param amount 
+   * @param transactionType 
+   * @param description 
+   * @param client 
+   * @returns transaktion_id för den sparade transaktionen
+   */
   async save(
     accountId: number, 
     amount: string, 
