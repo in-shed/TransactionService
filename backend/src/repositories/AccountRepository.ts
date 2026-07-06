@@ -1,6 +1,11 @@
 import { pool, PoolClient } from '../config/db.js';
 import { AccountType } from '../enums/index.js';
 
+
+/**
+ * AccountRecord representerar en rad i tabellen "accounts" i databasen.
+ * Innehåller information om ett bankkonto, inklusive kontonummer, personnummer, kontotyp och saldo.
+ */
 export interface AccountRecord {
   account_id: number;
   pno: string;

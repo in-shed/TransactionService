@@ -1,6 +1,7 @@
 import { Pool, PoolClient } from 'pg';
 import dotenv from 'dotenv';
 
+// Konfigurera miljövariabler från .env-filen och anslut till databasen med en connection pool.
 dotenv.config();
 
 const connectionString = process.env.DATABASE_URL || 'postgresql://localhost:5432/TransactionManagement';

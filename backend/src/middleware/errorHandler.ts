@@ -1,6 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import { ResourceNotFoundError, BusinessError } from '../errors/index.js';
 
+/**
+ * Hanterar fel som uppstår i Express-applikationen och skickar lämpliga HTTP-svar.
+ * @param err - Felobjektet som fångats av Express.
+ * @param req - Express Request-objektet.
+ * @param res - Express Response-objektet.
+ * @param next - Express NextFunction för att skicka vidare felhanteringen.
+ * @returns Ett HTTP-svar med statuskod och felmeddelande.
+ */
 export function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
   console.error(err);
   
