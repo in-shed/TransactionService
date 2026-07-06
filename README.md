@@ -25,13 +25,12 @@ A full-stack banking application built with a Node.js/Express.js/TypeScript back
 
 The application expects a PostgreSQL database with native enum types.
 
-sql
+```sql
 
--- Custom Enum Types
+-- enum types
 CREATE TYPE account_type AS ENUM ('SAVINGS', 'CREDIT');
 CREATE TYPE transaction_type AS ENUM ('DEPOSIT', 'WITHDRAWAL', 'INTEREST', 'ACCOUNT_CLOSED');
 
--- Tables
 CREATE TABLE customers (
     pno         VARCHAR(20)   PRIMARY KEY,
     first_name  VARCHAR(100)  NOT NULL,
@@ -54,9 +53,51 @@ CREATE TABLE transactions (
     transaction_time  TIMESTAMP         NOT NULL DEFAULT NOW()
 );
 
--- Indexes for performance
 CREATE INDEX idx_accounts_pno            ON accounts(pno);
 CREATE INDEX idx_transactions_account_id ON transactions(account_id);
+```
+
+## Running the Project
+
+Ensure Node.js (v20 LTS or higher), Docker and npm are installed on your system.
+
+A docker-compose.yml file is provided at root of the project to fire up the PostgreSQL database.
+ 
+```bash 
+# From the project root
+docker compose up -d
+```
+This creates a PostgreSQL database named bankdb with user bank and password bank on port 5432.
+
+3. Configure Environment Variables
+
+Create a .env file inside the backend folder:
+
+`backend/.env`
+```env
+DATABASE_URL=postgresql://bank:bank@localhost:5432/bankdb
+PORT=8080
+```
+ 
+4. Install Dependencies
+
+Run `npm install` from the root directory:
+```bash
+# From the project root
+npm install
+```
+
+5. Run the Application
+
+To start both the backend API server and the frontend React development server at the same time run `npm run dev` from the project root:
+```bash
+# From the project root
+npm run dev
+```
+Backend API will be running at http://localhost:8080
+Frontend UI will be running at http://localhost:3000
+
+Vite is configured to proxy all /api requests from port 3000 to port 8080, so you can interact with the entire application via http://localhost:3000.
 
 ## API endpoints
 

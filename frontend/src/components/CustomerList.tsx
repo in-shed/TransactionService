@@ -4,12 +4,23 @@ import { ApiError } from '../api/client';
 import type { CustomerSummary } from '../types';
 import { CustomerForm } from './CustomerForm';
 
+/**
+ * Komponent som visar en lista över kunder och hanterar skapandet av nya kunder.
+ * @param selectedPNo - Personnummer för den valda kunden.
+ * @param onSelect - Callback som anropas när en kund väljs.
+ * @param reloadKey - Nyckel som används för att trigga omladdning av kundlistan.
+ */
 interface CustomerListProps {
   selectedPNo: string | null;
   onSelect: (pNo: string) => void;
   reloadKey: number;
 }
 
+/**
+ * CustomerList-komponenten renderar en lista över kunder och hanterar skapandet av nya kunder.
+ * @param param0 
+ * @returns JSX.Element
+ */
 export function CustomerList({ selectedPNo, onSelect, reloadKey }: CustomerListProps) {
   const [customers, setCustomers] = useState<CustomerSummary[]>([]);
   const [loading, setLoading] = useState(true);

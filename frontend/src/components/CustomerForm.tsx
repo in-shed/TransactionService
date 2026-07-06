@@ -5,6 +5,11 @@ interface CustomerFormProps {
   onCancel: () => void;
 }
 
+/**
+ * Komponent som visar ett formulär för att skapa en ny kund.
+ * @param param0 
+ * @returns 
+ */
 export function CustomerForm({ onSubmit, onCancel }: CustomerFormProps) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
