@@ -23,7 +23,8 @@ A full-stack banking application built with a Node.js/Express.js/TypeScript back
 
 ## Database Schema
 
-The application expects a PostgreSQL database with native enum types for strict data integrity. Below is the schema definition.
+The application expects a PostgreSQL database with native enum types.
+
 sql
 
 -- Custom Enum Types
