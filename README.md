@@ -99,6 +99,11 @@ Frontend UI will be running at http://localhost:3000
 
 Vite is configured to proxy all /api requests from port 3000 to port 8080, so you can interact with the entire application via http://localhost:3000.
 
+## Screenshots
+
+<img width="1095" height="686" alt="Screenshot 2026-07-07 at 16 00 37" src="https://github.com/user-attachments/assets/04196429-5ac5-4996-84dd-6941d0079cee" />
+
+
 ## API endpoints
 
 | Method | Endpoint | Description |
